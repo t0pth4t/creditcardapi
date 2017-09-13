@@ -8,40 +8,20 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace CreditCardAPI.Controllers
 {
-    public class AccountsController : Controller
+    public class TransactionsController : Controller
     {
         private readonly DatabaseContext _databaseContext;
 
-        public AccountsController(DatabaseContext databaseContext)
+        public TransactionsController(DatabaseContext databaseContext)
         {
             _databaseContext = databaseContext;
         }
 
-        // GET api/values
-        [HttpGet]
-        [AllowAnonymous]
-        [Route("api/health")]
-        public IActionResult Get()
-        {
-            return Ok();
-        }
-
-        // GET api/values/5
-        [HttpGet]
-        [Route("api/accounts/{id}")]
-        public IActionResult Get([FromRoute]int id)
-        {
-            var account =  _databaseContext.Accounts.SingleOrDefault(x => x.Id == id);
-            if (account == null)
-                return NotFound();
-            return Ok(account);
-        }
-
-        // POST api/values
         [HttpPost]
-        public IActionResult Post([FromBody]Account account)
+        [Route("api/transactions")]
+        public IActionResult Post([FromBody]Transaction transaction)
         {
-            _databaseContext.Accounts.Add(account);
+            _databaseContext.Transactions.Add(transaction);
             _databaseContext.SaveChanges();
             return Ok();
         }

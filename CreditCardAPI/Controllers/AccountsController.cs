@@ -43,7 +43,7 @@ namespace CreditCardAPI.Controllers
         {
             _databaseContext.Accounts.Add(account);
             _databaseContext.SaveChanges();
-            return Ok();
+            return Ok(account.Id);
         }
 
     }
