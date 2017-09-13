@@ -9,6 +9,9 @@ namespace CreditCardAPI.Models
         public int Id { get; set; }
 
         [Required]
+        public int AccountId { get; set; }
+
+        [Required]
         public string Type { get; set; }
 
         [Required]

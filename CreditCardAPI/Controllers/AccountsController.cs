@@ -17,16 +17,13 @@ namespace CreditCardAPI.Controllers
             _databaseContext = databaseContext;
         }
 
-        // GET api/values
         [HttpGet]
-        [AllowAnonymous]
         [Route("api/health")]
         public IActionResult Get()
         {
             return Ok();
         }
 
-        // GET api/values/5
         [HttpGet]
         [Route("api/accounts/{id}")]
         public IActionResult Get([FromRoute]int id)
@@ -34,11 +31,12 @@ namespace CreditCardAPI.Controllers
             var account =  _databaseContext.Accounts.SingleOrDefault(x => x.Id == id);
             if (account == null)
                 return NotFound();
+
             return Ok(account);
         }
 
-        // POST api/values
         [HttpPost]
+        [Route("api/accounts")]
         public IActionResult Post([FromBody]Account account)
         {
             _databaseContext.Accounts.Add(account);
