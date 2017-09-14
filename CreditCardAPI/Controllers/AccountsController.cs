@@ -31,12 +31,12 @@ namespace CreditCardAPI.Controllers
             var account =  _databaseContext.Accounts.SingleOrDefault(x => x.Id == id);
             if (account == null)
                 return NotFound();
-            account.CashOut = _databaseContext.CashOuts.SingleOrDefault(x => x.AccountId == account.Id);
-            account.CashOut.Credits = _databaseContext.Credits.Where(x => x.LedgerId == account.CashOut.Id).ToList();
-            account.CashOut.Debits = _databaseContext.Debits.Where(x => x.LedgerId == account.CashOut.Id).ToList();
-            List<Transaction> transactions = new List<Transaction>(account.CashOut.Credits);
-            transactions.AddRange(account.CashOut.Debits);
-            var principal = account.CashOut.Credits.Sum(x => x.Amount) - account.CashOut.Debits.Sum(x => x.Amount);
+            account.Principal = _databaseContext.Principals.SingleOrDefault(x => x.AccountId == account.Id);
+            account.Principal.Credits = _databaseContext.Credits.Where(x => x.LedgerId == account.Principal.Id).ToList();
+            account.Principal.Debits = _databaseContext.Debits.Where(x => x.LedgerId == account.Principal.Id).ToList();
+            List<Transaction> transactions = new List<Transaction>(account.Principal.Credits);
+            transactions.AddRange(account.Principal.Debits);
+            var principal = account.Principal.Credits.Sum(x => x.Amount);
             var accountModel = new AccountModel
             {
                 Id = account.Id,
