@@ -9,6 +9,9 @@ namespace CreditCardAPI
             : base(options){ }
 
         public DbSet<Account> Accounts { get; set; }
-        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<CashOut> CashOuts { get; set; }
+        public DbSet<Principal> Principals { get; set; }
+        public DbSet<Debit> Debits { get; set; }
+        public DbSet<Credit> Credits { get; set; }
     }
 }

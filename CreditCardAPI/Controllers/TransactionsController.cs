@@ -19,9 +19,24 @@ namespace CreditCardAPI.Controllers
 
         [HttpPost]
         [Route("api/transactions")]
-        public IActionResult Post([FromBody]Transaction transaction)
+        public IActionResult Post([FromBody]TransactionModel transaction)
         {
-            _databaseContext.Transactions.Add(transaction);
+            var account = _databaseContext.Accounts.SingleOrDefault(acc => acc.Id == transaction.AccountId);
+            if (account == null)
+            {
+                return NotFound();
+            }
+            account.CashOut = _databaseContext.CashOuts.SingleOrDefault(x => x.AccountId == account.Id);
+            account.Principal = _databaseContext.Principals.SingleOrDefault(x => x.AccountId == account.Id);
+            var debit = new Debit{Amount = transaction.Amount, Timestamp = DateTime.Now, Type = transaction.Type, LedgerId = account.CashOut.Id};
+            _databaseContext.Debits.Add(debit);
+            
+            var credit = new Credit{Amount = transaction.Amount, Timestamp = DateTime.Now, Type = transaction.Type, LedgerId = account.Principal.Id};
+            _databaseContext.Credits.Add(credit);
+
+            account.CashOut.Debits.Add(debit);
+            account.Principal.Credits.Add(credit);
+            
             _databaseContext.SaveChanges();
             return Ok();
         }
