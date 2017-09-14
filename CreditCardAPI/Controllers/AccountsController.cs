@@ -1,20 +1,17 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using CreditCardAPI.Models;
-using Microsoft.AspNetCore.Authorization;
+using CreditCardAPI.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CreditCardAPI.Controllers
 {
     public class AccountsController : Controller
     {
-        private readonly DatabaseContext _databaseContext;
+        private readonly IAccountsService _accountsService;
 
-        public AccountsController(DatabaseContext databaseContext)
+        public AccountsController(IAccountsService accountsService)
         {
-            _databaseContext = databaseContext;
+            _accountsService = accountsService;
         }
 
         [HttpGet]
@@ -28,38 +25,36 @@ namespace CreditCardAPI.Controllers
         [Route("api/accounts/{id}")]
         public IActionResult Get([FromRoute]int id)
         {
-            var account =  _databaseContext.Accounts.SingleOrDefault(x => x.Id == id);
-            if (account == null)
-                return NotFound();
-            account.Principal = _databaseContext.Principals.SingleOrDefault(x => x.AccountId == account.Id);
-            account.Principal.Credits = _databaseContext.Credits.Where(x => x.LedgerId == account.Principal.Id).ToList();
-            account.Principal.Debits = _databaseContext.Debits.Where(x => x.LedgerId == account.Principal.Id).ToList();
-            List<Transaction> transactions = new List<Transaction>(account.Principal.Credits);
-            transactions.AddRange(account.Principal.Debits);
-            var principal = account.Principal.Credits.Sum(x => x.Amount);
-            var accountModel = new AccountModel
+            try
             {
-                Id = account.Id,
-                Principal = principal,
-                Transactions    = transactions.OrderByDescending(x => x.Timestamp)
-            };
-            return Ok(accountModel);
+                var account = _accountsService.GetAccount(id);
+                return Ok(account);
+            }
+            catch (AccountNotFoundException ae)
+            {
+                return NotFound(ae);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
+            
         }
 
         [HttpPost]
         [Route("api/accounts")]
-        public IActionResult Post([FromBody]AccountModel newAccount)
+        public IActionResult Post([FromBody] AccountModel newAccount)
         {
+            try
+            {
+                var accountId = _accountsService.CreateAccount();
+                return Ok(accountId);
+            }
+            catch (Exception e)
+            {
+                return BadRequest(e);
+            }
 
-            var account = new Account();
-            _databaseContext.Accounts.Add(account);
-            _databaseContext.SaveChanges();
-
-
-            _databaseContext.CashOuts.Add(new CashOut {AccountId = account.Id});
-            _databaseContext.Principals.Add(new Principal { AccountId = account.Id});
-            _databaseContext.SaveChanges();
-            return Ok(account.Id);
         }
 
     }

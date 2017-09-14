@@ -4,7 +4,7 @@ using CreditCardAPI.Models;
 
 namespace CreditCardAPI.Services
 {
-    public class TransactionsService
+    public class TransactionsService : ITransactionsService
     {
         private readonly DatabaseContext _databaseContext;
 
@@ -13,24 +13,32 @@ namespace CreditCardAPI.Services
             _databaseContext = databaseContext;
         }
 
-        public void AddTransaction(int accountId, Transaction transaction)
+        public void AddTransaction(int accountId, double amount, string type)
         {
             var account = _databaseContext.Accounts.SingleOrDefault(acc => acc.Id == accountId);
             if (account == null)
             {
-                throw new Exception();
+                throw new AccountNotFoundException($"Account for account id {accountId} not found.");
             }
-            account.CashOut = _databaseContext.CashOuts.SingleOrDefault(x => x.AccountId == account.Id);
-            account.Principal = _databaseContext.Principals.SingleOrDefault(x => x.AccountId == account.Id);
-            var debit = new Debit { Amount = transaction.Amount, Timestamp = DateTime.Now, Type = transaction.Type, LedgerId = account.CashOut.Id };
-            _databaseContext.Debits.Add(debit);
 
-            var credit = new Credit { Amount = transaction.Amount, Timestamp = DateTime.Now, Type = transaction.Type, LedgerId = account.Principal.Id };
+            AddDebit(account.Id, amount, type);
+            AddCredit(account.Id, amount, type);
+            
+        }
+
+        private void AddCredit(int accountId, double amount, string type)
+        {
+            var principalForAccount = _databaseContext.Principals.SingleOrDefault(x => x.AccountId == accountId);
+            var credit = new Credit {Amount = amount, Timestamp = DateTime.Now, Type = type, LedgerId = principalForAccount.Id};
             _databaseContext.Credits.Add(credit);
+            _databaseContext.SaveChanges();
+        }
 
-            account.CashOut.Debits.Add(debit);
-            account.Principal.Credits.Add(credit);
-
+        private void AddDebit(int accountId, double amount, string type)
+        {
+            var cashOutForAccount = _databaseContext.CashOuts.SingleOrDefault(x => x.AccountId == accountId);
+            var debit = new Debit {Amount = amount, Timestamp = DateTime.Now, Type = type, LedgerId = cashOutForAccount.Id};
+            _databaseContext.Debits.Add(debit);
             _databaseContext.SaveChanges();
         }
     }

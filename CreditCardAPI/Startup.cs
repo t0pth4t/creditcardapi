@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CreditCardAPI.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -9,7 +10,8 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Swashbuckle.AspNetCore.Swagger;
-
+using System.Runtime.CompilerServices;
+[assembly: InternalsVisibleTo("CreditCardAPI.Tests")]
 namespace CreditCardAPI
 {
     public class Startup
@@ -31,7 +33,8 @@ namespace CreditCardAPI
         {
             // Add framework services.
             services.AddMvc();
-
+            services.AddTransient<IAccountsService, AccountsService>();
+            services.AddTransient<ITransactionsService, TransactionsService>();
             services.AddDbContext<DatabaseContext>(options =>
             {
                 options.UseSqlite(@"Data Source=D:\creditcardapi.db");
