@@ -37,7 +37,7 @@ namespace CreditCardAPI
             services.AddTransient<ITransactionsService, TransactionsService>();
             services.AddDbContext<DatabaseContext>(options =>
             {
-                options.UseSqlite(@"Data Source=D:\creditcardapi.db");
+                options.UseSqlite(@"Data Source=" + Configuration["DataSourceLocation"]);
             });
 
             services.AddSwaggerGen(c =>
